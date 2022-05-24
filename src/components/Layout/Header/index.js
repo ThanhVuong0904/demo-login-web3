@@ -77,7 +77,9 @@ export default function Header() {
                     </Link>
 
                     <div className={cx('dot')}></div>
-                    <p className={cx('network')}>{network}</p>
+                    <p className={cx('network', { err: network === undefined })}>
+                        {network === undefined ? 'Wrong network' : network}
+                    </p>
 
                     <ConnectWallet />
                 </div>

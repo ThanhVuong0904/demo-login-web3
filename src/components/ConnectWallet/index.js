@@ -36,19 +36,22 @@ export default function ConnectWallet() {
     const [checkPolicy, setCheckPolicy] = useState(false);
     const [toggle, setToggle] = useState(false);
 
-    const { connect, account, network, active, balance, disconnect } = useContext(WalletContext);
-
+    const { connect, account, network, error, active, balance, disconnect, switchNetwork } = useContext(WalletContext);
     return (
         <>
-            <div className={cx('wrapper')} onClick={() => setToggle(true)}>
+            <div className={cx('wrapper')}>
                 {account ? (
                     <p>
                         {account.slice(0, 4)}...{account.slice(account.length - 4, account.length)}
                     </p>
                 ) : (
-                    <p>Connect Wallet</p>
+                    <>
+                        {error && <p onClick={() => switchNetwork()}>Switch Network</p>}
+                        {!error && <p onClick={() => setToggle(true)}>Connect Wallet</p>}
+                    </>
                 )}
             </div>
+
             {toggle && (
                 <Modal
                     onClick={() => {

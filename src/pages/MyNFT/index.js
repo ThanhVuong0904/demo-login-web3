@@ -22,8 +22,15 @@ export default function MyNFT() {
         }
     }, [chainId]);
     useEffect(() => {
+        console.log('chain id', chainId);
+    }, [chainId]);
+    useEffect(() => {
         const getNFTs = async () => {
-            const res = await axios.get(`https://api-nft.airclass.io/nft/${account}/${network}`);
+            const res = await axios.get(`https://api-nft.airclass.io/nft/${account}/${network}`, {
+                headers: {
+                    'Access-Control-Allow-Origin': '*',
+                },
+            });
             setNFTs(res.data.nft);
         };
         account && getNFTs();

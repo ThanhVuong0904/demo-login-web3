@@ -7,10 +7,11 @@ import detectEthereumProvider from '@metamask/detect-provider';
 export const WalletContext = createContext();
 
 function WalletContextProvider({ children }) {
-    const { active, account, activate, deactivate, chainId } = useWeb3React();
+    const { active, account, activate, deactivate, chainId, error } = useWeb3React();
     const [web3, setWeb3] = useState();
+    const [provider, setProvider] = useState();
     const [balance, setBalance] = useState();
-    const [network, setNetwork] = useState('');
+    const [network, setNetwork] = useState();
     const injected = new InjectedConnector({
         //chain is network blockchain
         // 4 rinkeby
@@ -20,13 +21,21 @@ function WalletContextProvider({ children }) {
     });
     useEffect(() => {
         const loadProvider = async () => {
-            const web3 = new Web3(await detectEthereumProvider());
-            // const web3 = new Web3(library.provider);
+            const provider = await detectEthereumProvider();
+            const web3 = new Web3(provider);
+            setWeb3(web3);
+            setProvider(provider);
+        };
+        loadProvider();
+        // eslint-disable-next-line react-hooks/exhaustive-deps
+    }, []);
+
+    useEffect(() => {
+        const getBalance = async () => {
             const balance = await web3.eth.getBalance(account);
             setBalance(balance);
-            setWeb3(web3);
         };
-        account && loadProvider();
+        account && getBalance();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, [account]);
     useEffect(() => {
@@ -43,7 +52,9 @@ function WalletContextProvider({ children }) {
         connectWalletOnPageLoad();
         // eslint-disable-next-line react-hooks/exhaustive-deps
     }, []);
-
+    useEffect(() => {
+        console.log(error);
+    }, [error]);
     useEffect(() => {
         if (chainId) {
             switch (chainId) {
@@ -75,6 +86,13 @@ function WalletContextProvider({ children }) {
             console.log(ex);
         }
     }
+    const switchNetwork = async () => {
+        const RINKEBY_HEX_CHAIN = '0x4';
+        await provider.request({
+            method: 'wallet_switchEthereumChain',
+            params: [{ chainId: RINKEBY_HEX_CHAIN }],
+        });
+    };
     const state = {
         web3,
         balance,
@@ -82,8 +100,10 @@ function WalletContextProvider({ children }) {
         network,
         active,
         chainId,
+        error,
         connect,
         disconnect,
+        switchNetwork,
     };
     return <WalletContext.Provider value={state}>{children}</WalletContext.Provider>;
 }
